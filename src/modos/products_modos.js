@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import config from "../config.js";
+import { Socket } from "socket.io";
 
 const upath = path.join(config.DIRNAME, "../src/jsons/products.json");
 
@@ -35,6 +36,8 @@ export const productsModos = {
 
   addProduct: (req, res) => {
     let id;
+    const socketServer = req.app.get("socketServer");
+
     products.length < 1 ? (id = -1) : (id = products.length - 1);
 
     const product = {
@@ -62,6 +65,8 @@ export const productsModos = {
       products.push(product);
       fs.writeFileSync(upath, JSON.stringify(products));
       res.status(200).send(products);
+
+      socketServer.emit("upGradeProducts", products);
     }
   },
 
@@ -99,6 +104,7 @@ export const productsModos = {
   },
   deleteProduct: (req, res) => {
     const id = +req.params.pid;
+    const socketServer = req.app.get("socketServer");
     const getProducts = products;
     const upgrateArray = getProducts.filter((element) => element.id !== id);
 
@@ -108,6 +114,8 @@ export const productsModos = {
       products = [...upgrateArray];
       fs.writeFileSync(upath, JSON.stringify(products));
       res.status(200).send("Producto eliminado");
+
+      socketServer.emit("upGradeProducts", products);
     }
   },
 };
